@@ -1,0 +1,140 @@
+---
+title: "Sample size Calculation"
+author: "Truc Do"
+date: "2025-04-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+install.packages("usethis")
+install.packages("git2r")
+```
+
+
+```{r cars}
+data <- read.csv("/Users/nguyentruc/Desktop/UHasselt/Project_MHD/Project/G9.pilot.data.csv")
+head(data)
+```
+```{r}
+str(data)
+summary(data)
+```
+```{r}
+table(data$location)
+table(data$species)
+```
+
+```{r}
+library(dplyr)
+# Calculate the mean pear quality score (FQI) for each tree
+tree_means <- data %>%
+  group_by(tree_id) %>%
+  summarise(mean_quality = mean(quality_index))
+
+# Calculate variance between trees (between-group variance)
+var_between <- var(tree_means$mean_quality)
+
+# Calculate the residual variance (within-group variance)
+var_within <- var(data$quality_index)
+
+# Calculate ICC
+icc <- var_between / (var_between + var_within)
+
+# Print ICC
+print(paste("ICC:", icc))
+```
+
+```{r}
+sd <-  sd(data$quality_index)
+sd
+```
+
+
+```{r}
+# Calculate the variance of the pear quality index 
+variance_pilot <- var(data$quality_index)
+
+# Define the inflation factor 
+inflation_factor <- 1.1  
+
+# Calculate the inflated variance
+variance_inflated <- variance_pilot * inflation_factor
+
+# Print the original variance and inflated variance
+cat("Variance from pilot study: ", variance_pilot, "\n")
+cat("Inflated variance: ", variance_inflated, "\n")
+
+# Sample size calculation
+alpha <- 0.05 / 6  # Adjusted alpha for multiple comparisons (Bonferroni correction)
+power_levels <- c(0.80, 0.85, 0.90)  # Different power levels
+effect_sizes <- c(10, 15, 20)  # Effect sizes
+
+# Sample size calculation for each effect size and power level using original and inflated variances
+results <- data.frame()
+
+for (effect_size in effect_sizes) {
+  for (power in power_levels) {
+    
+    # Use the inflated variance
+    sample_size_inflated <- power.t.test(delta = effect_size, sd = sqrt(variance_inflated), sig.level = alpha, power = power, 
+                                         type = "two.sample", alternative = "two.sided")$n
+    
+    # Store the results in a dataframe
+    results <- rbind(results, data.frame(Effect_Size = effect_size, Power = power, 
+                                         Variance_Type = "Inflated", Sample_Size = round(sample_size_inflated),
+                                         Variance = variance_inflated))
+  }
+}
+
+# Display the results
+print(results)
+```
+# Simulation
+```{r}
+# Set parameters for the simulation
+N = 152
+alpha = 0.05 / 6  # Adjusted alpha for multiple comparisons
+delta = 15  # Effect size
+sd = 36.23  # Standard deviation (assume based on pilot data)
+sdChoice = sd * 1.1  # Inflated standard deviation for conservative estimation
+
+# Number of simulations
+numberSimulation <- 5000
+pval <- numeric(numberSimulation)  # Store the p-values from simulations
+
+set.seed(1234)  # Set the seed for reproducibility
+
+for (i in 1:numberSimulation) {
+  # Simulate data for 4 groups: control + 3 experimental scenarios
+  controlGroup <- rnorm(N, mean = 50, sd = sdChoice)
+  treatedGroup1 <- rnorm(N, mean = 50 + delta, sd = sdChoice)  # Scenario 2
+  treatedGroup2 <- rnorm(N, mean = 50 + 2 * delta, sd = sdChoice)  # Scenario 3
+  treatedGroup3 <- rnorm(N, mean = 50 + 3 * delta, sd = sdChoice)  # Scenario 4
+  
+  # Perform one-sided t-tests for each treatment group vs control group
+  pval1 <- t.test(controlGroup, treatedGroup1, alternative = "less",
+                  mu = 0, paired = FALSE, var.equal = TRUE, conf.level = 1 - alpha)$p.value
+  pval2 <- t.test(controlGroup, treatedGroup2, alternative = "less",
+                  mu = 0, paired = FALSE, var.equal = TRUE, conf.level = 1 - alpha)$p.value
+  pval3 <- t.test(controlGroup, treatedGroup3, alternative = "less",
+                  mu = 0, paired = FALSE, var.equal = TRUE, conf.level = 1 - alpha)$p.value
+  
+  # Store p-values for each simulation
+  pval[i] <- min(c(pval1, pval2, pval3))  # Take the mean of the three p-values
+}
+
+# Print summary of p-values to diagnose
+summary(pval)
+
+# Estimate the power
+power_estimate <- sum(pval < alpha) / numberSimulation
+cat("Estimated Power: ", power_estimate, "\n")
+
+# Optional: Print first few p-values
+head(pval)  # Show first 6 p-values
+
+```
+
