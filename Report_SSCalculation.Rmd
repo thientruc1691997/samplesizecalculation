@@ -16,17 +16,17 @@ header-includes:
 ---
 
 
-
-
 # 1. Introduction
 
 This report outlines the sample size calculation for the study, based on statistical hypotheses, assumptions on effect size, variance, power, significance level, and missing data. The aim is to ensure sufficient power to detect significant differences in pear quality across climate scenarios.
 
 # 2. Sample size calculation
 
-## 2.1 Hypothesis
+## Study objectives
 
-The hypotheses for this study are formulated as follows:
+Explore the difference between pear quality scores under the impact of 4 climate scenarios.
+
+## Hypothesis
 
 **Null Hypothesis ($H_0$):**
 There is no significant difference in pear quality between the climate scenarios:
@@ -38,20 +38,29 @@ There is at least one significant difference in pear quality score between pairs
 
 $$\mu_i \neq \mu_j \quad \text{for} \quad i, j = 1, 2, 3, 4 \quad \text{and} \quad i \neq j$$
 
-## 2.2 Assumptions
+## Statistical modelling
+
+$$ Y_{ki} = \beta_0 + b_k + \beta_1*Variety_k + \sum_{j=1}^{3}(\beta_{2j}*Scenario_{kj}) + \sum_{j=1}^{3}\beta_{3j}Scenario_{kj}*Variety_k + \epsilon_{ki}$$
+
+- $Y_{ki}$: the i-th observed outcome of the k-th tree, $i = 1,….,n_K$
+- $b_k$: is the random effect of the k-th tree (k = 1,2...K). $b_k$ ~ N(0, σ_{tree}^{2})
+- $\beta_{0}$: the average score of the reference group (Conference type, scenario 1)
+- $Variety_k$: dummy variable (1 for Doyenne du Comice species, 0 otherwise)
+- $Scenario_{kj}$: dummy variable, j = 1,2,3 for scenario 2, 3, 4 respectively
+- $\epsilon_{ki}$: the residual error. $\epsilon_{kj} \sim N(0, \sigma_{res}^{2})$
+
+
+## Assumptions
 
 To calculate the required sample size, we use the following assumptions:
 
-- **Significance Level (α)**: \( \alpha = \frac{0.05}{6} \) (adjusted for multiple comparisons)
+- **Significance Level ($\alpha$)**: \( \alpha = \frac{0.05}{6} \) (adjusted for multiple comparisons)
 - **Effect Size**: 10, 15, and 20 (representing small, medium, and large effect sizes)
 - **Variance**: The standard deviation from the pilot study is approximately 36.23, inflated by a factor of 1.1 to \( \text{SD} = 39.85 \)
 - **Power**: 80%, 85%, and 90%
-- **Missing Data**: 10% of the data is expected to be missing
+- **Missing Data**: data missing rate data is expected to be 10%
 
-\newpage
-
-## 2.3 Result
-
+## Result
   
 ```{r, echo=FALSE}
 # Load necessary library
@@ -60,7 +69,7 @@ library(kableExtra)
 
 
 # Your existing code for data processing and sample size calculation
-data <- read.csv("/Users/nguyentruc/Desktop/UHasselt/Project_MHD/Project/G9.pilot.data.csv")
+data <- read.csv("G9.pilot.data.csv")
 sd <-  sd(data$quality_index)
 variance_pilot <- var(data$quality_index)
 
@@ -104,9 +113,10 @@ colnames(results) <- c("Effect Size", "Power", "Sample Size per Group", "Sample 
 
 # Display the results as a table
 results %>%
-  kable("latex", caption = "Sample Size Results in Each group", position = "h!") %>%
+  kable("latex", caption = "Sample Size per group", position = "h!") %>%
   row_spec(0, bold = TRUE)
 ```
+
 ## 2.4 Experimental design
 
 Pears per tree: 32
@@ -192,11 +202,11 @@ We run 10,000 Monte Carlo simulations per scenario with:
 
 Parameters:
 
-- Fixed effect size (\delta = 15) across all simulations
+- Fixed effect size ($\delta = 15$) across all simulations
 
 - Conservative variance (inflated pilot SD by 10% to 39.85)
 
-- Bonferroni-adjusted α = 0.0083 for 6 comparisons
+- Bonferroni-adjusted $\alpha = 0.0083$ for 6 comparisons
 
 Methods:
 
@@ -219,6 +229,7 @@ sd_inflated <- sd_pilot * 1.1     # Conservative SD estimate
 # Initialize results vector
 sampleSizePower <- numeric(length(Nvec))
 names(sampleSizePower) <- Nvec
+pval = numeric(n_simulations)
 
 set.seed(1234)  # For reproducibility
 
@@ -230,16 +241,16 @@ for (j in seq_along(Nvec)) {
     # Generate data
     control <- rnorm(N, mean = 50, sd = sd_inflated)
     tx1 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
-    tx2 <- rnorm(N, mean = 50 + 2*delta, sd = sd_inflated)
-    tx3 <- rnorm(N, mean = 50 + 3*delta, sd = sd_inflated)
+    tx2 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
+    tx3 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
+    
+    scenario = c(rep(c(1,2,3,4), each = N))
+    quality = c(control, tx1, tx2, tx3)
     
     # Two-sided t-tests
-    p1 <- t.test(control, tx1, var.equal = TRUE)$p.value
-    p2 <- t.test(control, tx2, var.equal = TRUE)$p.value
-    p3 <- t.test(control, tx3, var.equal = TRUE)$p.value
+    pval[i] <- summary(aov(quality ~ scenario))[[1]][["Pr(>F)"]][1]
     
-    # Correct approach: minimum p-value (not mean)
-    significant[i] <- mean(c(p1, p2, p3)) < alpha
+    significant[i] <- pval[i] < 0.05 
   }
   
   # Calculate power for this sample size
@@ -322,6 +333,7 @@ final_plot <- ggdraw(power_plot) +
 # Display the plot
 final_plot
 ```
+
 The simulation results indicate that 155 observations per group are required to achieve statistically significant results. This finding aligns closely with our earlier sample size calculation (Section 2.3), which estimated a requirement of 175 observations to reach 85% power.
 
 # 4. Reference
