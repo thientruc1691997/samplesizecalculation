@@ -96,13 +96,13 @@ for (effect_size in effect_sizes) {
   }
 }
 
-# Add a row for "Sample Size per Group (10% Missing Data)"
+# Add row "Sample Size per Group (10% Missing Data)"
 results$Sample_Size_per_group_adjusted <- ceiling(results$Sample_size_per_group * adjustment_factor)
 
-# Rename the columns
+# Rename columns
 colnames(results) <- c("Effect Size", "Power", "Sample Size per Group", "Sample Size per Group (10% Missing Data)")
 
-# Display the results as a table
+# Display table
 results %>%
   kable("latex", caption = "Sample Size Results in Each group", position = "h!") %>%
   row_spec(0, bold = TRUE)
@@ -158,13 +158,13 @@ transposed_15 <- t(data_15[-1])
 transposed_20 <- t(data_20[-1])
 combined_data <- cbind(transposed_10, transposed_15, transposed_20)
 
-# Clean row names by removing dots
+# Removing dots in row name
 rownames(combined_data) <- gsub("\\.", " ", rownames(combined_data))
 
-# Set column names (Power levels repeated for each effect size)
+
 colnames(combined_data) <- rep(c("0.8", "0.85", "0.9"), 3)
 
-# Create LaTeX table with proper row name formatting
+# Create table 
 library(kableExtra)
 
 kable(combined_data, format = "latex", booktabs = TRUE,
@@ -230,8 +230,8 @@ for (j in seq_along(Nvec)) {
     # Generate data
     control <- rnorm(N, mean = 50, sd = sd_inflated)
     tx1 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
-    tx2 <- rnorm(N, mean = 50 + 2*delta, sd = sd_inflated)
-    tx3 <- rnorm(N, mean = 50 + 3*delta, sd = sd_inflated)
+    tx2 <- rnorm(N, mean = 50 + 10*delta, sd = sd_inflated)
+    tx3 <- rnorm(N, mean = 50 + 20*delta, sd = sd_inflated)
     
     # Two-sided t-tests
     p1 <- t.test(control, tx1, var.equal = TRUE)$p.value
@@ -251,7 +251,7 @@ for (j in seq_along(Nvec)) {
 
 ```{r, echo=FALSE}
 library(ggplot2)
-library(cowplot)  # For additonal theme options
+library(cowplot)  
 plot_data <- data.frame(
   SampleSize = Nvec,
   Power = sampleSizePower
@@ -301,7 +301,7 @@ power_plot <- ggplot(plot_data, aes(x = SampleSize, y = Power)) +
     caption = "Figure 1. Results from simulation study (n = 10,000 iterations per sample size)"
   ) +
   
-  # Theme customization
+  # Theme customize
   theme_minimal(base_size = 11) +
   theme(
     panel.grid.minor = element_blank(),
