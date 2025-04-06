@@ -1,0 +1,330 @@
+---
+title: "Sample Size Calculation: The Impact of Climate Change Interventions on Fruit Production in Belgium"
+author: |
+  **Project:** Multivariate and Hierarchical Data (3565)  
+  Discovering Associations  
+  Group 9  
+
+output:
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["booktabs", "float", "array"]
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{float}
+  - \usepackage{array}
+---
+
+
+
+
+# 1. Introduction
+
+This report outlines the sample size calculation for the study, based on statistical hypotheses, assumptions on effect size, variance, power, significance level, and missing data. The aim is to ensure sufficient power to detect significant differences in pear quality across climate scenarios.
+
+# 2. Sample size calculation
+
+## 2.1 Hypothesis
+
+The hypotheses for this study are formulated as follows:
+
+**Null Hypothesis ($H_0$):**
+There is no significant difference in pear quality between the climate scenarios:
+
+$$\mu_1 = \mu_2 = \mu_3 = \mu_4$$
+
+**Alternative Hypothesis ($H_1$):**
+There is at least one significant difference in pear quality score between pairs of climate scenarios:
+
+$$\mu_i \neq \mu_j \quad \text{for} \quad i, j = 1, 2, 3, 4 \quad \text{and} \quad i \neq j$$
+
+## 2.2 Assumptions
+
+To calculate the required sample size, we use the following assumptions:
+
+- **Significance Level (α)**: \( \alpha = \frac{0.05}{6} \) (adjusted for multiple comparisons)
+- **Effect Size**: 10, 15, and 20 (representing small, medium, and large effect sizes)
+- **Variance**: The standard deviation from the pilot study is approximately 36.23, inflated by a factor of 1.1 to \( \text{SD} = 39.85 \)
+- **Power**: 80%, 85%, and 90%
+- **Missing Data**: 10% of the data is expected to be missing
+
+\newpage
+
+## 2.3 Result
+
+  
+```{r, echo=FALSE}
+# Load necessary library
+library(knitr)
+library(kableExtra)
+
+
+# Your existing code for data processing and sample size calculation
+data <- read.csv("/Users/nguyentruc/Desktop/UHasselt/Project_MHD/Project/G9.pilot.data.csv")
+sd <-  sd(data$quality_index)
+variance_pilot <- var(data$quality_index)
+
+# Define the inflation factor 
+inflation_factor <- 1.1  
+
+# Calculate the inflated variance
+variance_inflated <- variance_pilot * inflation_factor
+
+# Sample size calculation
+alpha <- 0.05 / 6  # Adjusted alpha for multiple comparisons (Bonferroni correction)
+power_levels <- c(0.80, 0.85, 0.90)  # Different power levels
+effect_sizes <- c(10, 15, 20)  # Effect sizes
+missing_data_percentage <- 0.10 
+
+adjustment_factor <- 1 / (1 - missing_data_percentage)
+
+# Sample size calculation for each effect size and power level using original and inflated variances
+results <- data.frame()
+
+for (effect_size in effect_sizes) {
+  for (power in power_levels) {
+    
+    # Use the inflated variance
+    sample_size_inflated <- power.t.test(delta = effect_size, sd = sqrt(variance_inflated), sig.level = alpha, power = power, 
+                                         type = "two.sample", alternative = "two.sided")$n
+    
+    sample_size_adjusted <- ceiling(sample_size_inflated * adjustment_factor)
+    
+    # Store the results in a dataframe
+    results <- rbind(results, data.frame(Effect_Size = effect_size, Power = power, 
+                                        Sample_size_per_group = round(sample_size_inflated)))
+  }
+}
+
+# Add a row for "Sample Size per Group (10% Missing Data)"
+results$Sample_Size_per_group_adjusted <- ceiling(results$Sample_size_per_group * adjustment_factor)
+
+# Rename the columns
+colnames(results) <- c("Effect Size", "Power", "Sample Size per Group", "Sample Size per Group (10% Missing Data)")
+
+# Display the results as a table
+results %>%
+  kable("latex", caption = "Sample Size Results in Each group", position = "h!") %>%
+  row_spec(0, bold = TRUE)
+```
+## 2.4 Experimental design
+
+Pears per tree: 32
+
+Number of scenario: 4 (Control, Scenario 2, Scenario 3, Scenario 4)
+
+Number of Ecotrons: 12 (each Ecotrons one scenario)
+
+Number of species: 2 (Conference and Doyenne du Comice pears)
+
+```{r, echo=FALSE}
+# Create data frames for all effect sizes
+data_10 <- data.frame(
+  Power = c(0.8, 0.85, 0.9),
+  `Sample size per group` = c(390, 436, 496),
+  `Total sample size` = c(1564, 1744, 1984),
+  `Number of tree` = c(49, 55, 62),
+  `Number of tree per scenario` = c(12, 14, 16),
+  `Number of tree per ecotron` = c(4, 5, 5),
+  `Number of tree per species` = c(2, 3, 3),
+  check.names = FALSE  
+)
+
+data_15 <- data.frame(
+  Power = c(0.8, 0.85, 0.9),
+  `Sample size per group` = c(175, 195, 222),
+  `Total sample size` = c(700, 780, 888),
+  `Number of tree` = c(22, 24, 28),
+  `Number of tree per scenario` = c(6, 6, 7),
+  `Number of tree per ecotron` = c(2, 2, 2),
+  `Number of tree per species` = c(1, 1, 1),
+  check.names = FALSE
+)
+
+data_20 <- data.frame(
+  Power = c(0.8, 0.85, 0.9),
+  `Sample size per group` = c(100, 111, 126),
+  `Total sample size` = c(400, 444, 504),
+  `Number of tree` = c(13, 14, 16),
+  `Number of tree per scenario` = c(3, 4, 4),
+  `Number of tree per ecotron` = c(1, 1, 1),
+  `Number of tree per species` = c(1, 1, 1),
+  check.names = FALSE
+)
+
+# Transpose and combine all data
+transposed_10 <- t(data_10[-1])  # Remove Power column
+transposed_15 <- t(data_15[-1])
+transposed_20 <- t(data_20[-1])
+combined_data <- cbind(transposed_10, transposed_15, transposed_20)
+
+# Clean row names by removing dots
+rownames(combined_data) <- gsub("\\.", " ", rownames(combined_data))
+
+# Set column names (Power levels repeated for each effect size)
+colnames(combined_data) <- rep(c("0.8", "0.85", "0.9"), 3)
+
+# Create LaTeX table with proper row name formatting
+library(kableExtra)
+
+kable(combined_data, format = "latex", booktabs = TRUE,
+      caption = "Number of tree per species in each ecotron",
+      align = "c",
+      row.names = TRUE,
+      escape = FALSE) %>%  # Important for special LaTeX characters
+  add_header_above(c(" " = 1, 
+                   "Effect size = 10" = 3, 
+                   "Effect size = 15" = 3,
+                   "Effect size = 20" = 3),
+                 bold = TRUE) %>%
+  kable_styling(latex_options = c("hold_position", "scale_down"),
+                font_size = 9,
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1, bold = TRUE, width = "5cm") %>%  # Wider first column
+  column_spec(2:10, width = "1.5cm") %>%  # Adjust other columns
+  row_spec(1:nrow(combined_data), extra_css = "white-space: nowrap;")
+```
+
+
+# 3. Simulation
+We run 10,000 Monte Carlo simulations per scenario with:
+
+Parameters:
+
+- Fixed effect size (\delta = 15) across all simulations
+
+- Conservative variance (inflated pilot SD by 10% to 39.85)
+
+- Bonferroni-adjusted α = 0.0083 for 6 comparisons
+
+Methods:
+
+- Simulate 10,000 datasets per sample size (N = 120–300)
+
+- Generate outcomes under the alternative hypothesis (true effect exists)
+
+- Compute two-sided t-tests for each treatment and control group
+
+
+```{r, echo=FALSE}
+# Parameters
+Nvec <- seq(120, 300, by = 10)  # Sample sizes to test
+n_simulations <- 10000            # Number of simulations per sample size
+alpha <- 0.05/6                   # Bonferroni-adjusted alpha
+delta <- 15                       # Effect size
+sd_pilot <- 36.23                 # Pilot SD
+sd_inflated <- sd_pilot * 1.1     # Conservative SD estimate
+
+# Initialize results vector
+sampleSizePower <- numeric(length(Nvec))
+names(sampleSizePower) <- Nvec
+
+set.seed(1234)  # For reproducibility
+
+for (j in seq_along(Nvec)) {
+  N <- Nvec[j]
+  significant <- logical(n_simulations)  # Track significant results
+  
+  for (i in 1:n_simulations) {
+    # Generate data
+    control <- rnorm(N, mean = 50, sd = sd_inflated)
+    tx1 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
+    tx2 <- rnorm(N, mean = 50 + 2*delta, sd = sd_inflated)
+    tx3 <- rnorm(N, mean = 50 + 3*delta, sd = sd_inflated)
+    
+    # Two-sided t-tests
+    p1 <- t.test(control, tx1, var.equal = TRUE)$p.value
+    p2 <- t.test(control, tx2, var.equal = TRUE)$p.value
+    p3 <- t.test(control, tx3, var.equal = TRUE)$p.value
+    
+    # Correct approach: minimum p-value (not mean)
+    significant[i] <- mean(c(p1, p2, p3)) < alpha
+  }
+  
+  # Calculate power for this sample size
+  sampleSizePower[j] <- mean(significant)
+}
+
+```
+
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(cowplot)  # For additonal theme options
+plot_data <- data.frame(
+  SampleSize = Nvec,
+  Power = sampleSizePower
+)
+# Create the plot with borders and caption
+power_plot <- ggplot(plot_data, aes(x = SampleSize, y = Power)) +
+  # Main plot elements
+  geom_line(color = "#1f77b4", linewidth = 1.3) +
+  geom_point(color = "#1f77b4", size = 3.5, shape = 21, fill = "white", stroke = 1.2) +
+  
+  # Reference lines
+  geom_hline(
+    yintercept = c(0.85, 0.9),
+    linetype = c("dashed", "dotted"),
+    color = c("#d62728", "#2ca02c"),
+    linewidth = 0.8
+  ) +
+  
+  # Annotations
+  annotate(
+    "text",
+    x = max(Nvec),
+    y = c(0.86, 0.91),
+    label = c("85% Power", "90% Power"),
+    color = c("#d62728", "#2ca02c"),
+    hjust = 1,
+    vjust = -0.5,
+    size = 3.5
+  ) +
+  
+  # Scales
+  scale_y_continuous(
+    limits = c(0.6, 1.0),
+    breaks = seq(0.6, 1.0, 0.05),
+    labels = scales::percent_format(accuracy = 1),
+    expand = c(0, 0)
+  ) +
+  scale_x_continuous(
+    breaks = seq(120, 300, 20),
+    expand = c(0.02, 0.02)
+  ) +
+  
+  # Labels
+  labs(
+    x = "Sample Size per Group",
+    y = "Statistical Power",
+    caption = "Figure 1. Results from simulation study (n = 10,000 iterations per sample size)"
+  ) +
+  
+  # Theme customization
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(linewidth = 0.2),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 11),
+    plot.subtitle = element_text(hjust = 0.5, color = "gray30", size = 9),
+    axis.title = element_text(size = 9),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8),
+    plot.caption = element_text(hjust = 0.5, size = 9, margin = margin(t = 10)),
+    plot.margin = unit(c(1, 1, 1, 1), "cm")
+  )
+
+# Add title and subtitle with proper borders
+final_plot <- ggdraw(power_plot) + 
+  draw_label("Statistical Power Analysis", 
+             x = 0.5, y = 0.97, size = 11, fontface = "bold") 
+
+# Display the plot
+final_plot
+```
+The simulation results indicate that 155 observations per group are required to achieve statistically significant results. This finding aligns closely with our earlier sample size calculation (Section 2.3), which estimated a requirement of 175 observations to reach 85% power.
+
+# 4. Reference
+Vandendijck, Y. (2025). Introduction to Sample Size Calculations [Lecture slides]. Multivariate and Hierarchical Data project, Hasselt University
+
+
