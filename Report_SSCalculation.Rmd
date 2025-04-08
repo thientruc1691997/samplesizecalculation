@@ -25,6 +25,7 @@ This report outlines the sample size calculation for the study, based on statist
 ## Study objectives
 
 Explore the difference between pear quality scores under the impact of 4 climate scenarios.
+- Endpoint: pear quality score (0-100).
 
 ## Hypothesis
 
@@ -58,8 +59,8 @@ To calculate the required sample size, we use the following assumptions:
 - **Effect Size**: 10, 15, and 20
 - **Variance**: The standard deviation from the pilot study is approximately 36.23, inflated by a factor of 1.1 to \( \text{SD} = 39.85 \)
 - **Power**: 80%, 85%, and 90%
-- **Missing Data**: data missing rate data is expected to be 10%
-- Each tree contains 32 pears, and there are $\leq6$ trees per ecotron, it is required 2 ecotrons for each scenario
+- **Missing Data**: data missing rate data is adjusted to be 10%
+- Each tree contains 32 pears, and there are $\leq6$ trees per ecotron
 
 <<<<<<< HEAD
 ## Result
@@ -137,27 +138,27 @@ The sample size after adjusting for 10% missing data rate is presented in the ta
 data_10 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
   `Sample size per scenario` = c(390, 436, 496),
-  `No. of trees per scenario` = c(13, 14, 16),
+  `No. of pears per species in 1 scenario` = c(195, 218, 248),
+  `No. of trees per species in 1 scenario` = c(7, 7, 8),
   `No. of ecotrons per scenario` = c(3, 3, 3),
-  `No. of trees per species` = c("6-7", 7, 8),
   check.names = FALSE  
 )
 
 data_15 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
   `Sample size per scenario` = c(175, 195, 222),
-  `No. of trees per scenario` = c(6, 7, 7),
+  `No. of pears per species in 1 scenario` = c(88, 98, 111),
+  `No. of trees per species in 1 scenario` = c(3, 4, 4),
   `No. of ecotrons per scenario` = c(1, 2, 2),
-  `No. of trees per species` = c(3, "3-4", "3-4"),
   check.names = FALSE
 )
 
 data_20 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
   `Sample size per scenario` = c(100, 111, 126),
-  `No. of trees per scenario` = c(4, 4, 4),
+  `No. of pears per species in 1 scenario` = c(50, 56, 63),
+  `No. of trees per species in 1 scenario` = c(2, 2, 2),
   `No. of ecotrons per scenario` = c(1, 1, 1),
-  `No. of trees per species` = c(2, 2, 2),
   check.names = FALSE
 )
 
@@ -197,17 +198,16 @@ kable(combined_data, format = "latex", booktabs = TRUE,
 
 ## Experimental design
 
-Based on the table, it is observed that 175 pears per scenario are suggested to observe the minimal difference of 10 in the quality scores between 2 groups, at $\alpha = 0.0083$ and power $\beta = 0.8$. Hence, the experimental design is suggested as following:
+Based on the table, it is observed that 390 pears per scenario are suggested to observe the minimal difference of 10 in the quality scores between 2 groups, at $\alpha = 0.0083$ and power $\beta = 0.8$. Hence, the experimental design is suggested as following:
 
-- One ecotron per scenario, in total 4 ecotrons for 4 scenarios.
-- 6 trees in each ecotron, with 3 trees for each pear species. To get a balance design, $32 \times 6 = 192$ pears per ecotron are required (96 pears for each species)
-- $32 \times 6 \times 4 = 768$ pears is the final sample size. 
+- 3 ecotrons per scenario, in total 12 ecotrons for 4 scenarios.
+- 14 trees per scenario, with 7 trees for each pear species.
 
 ## Simulation
 
-We also run 10,000 simulations for each sample size (from 120 to 300), with following parameters:
+We also run 10,000 simulations for each sample size (from 350 to 450), with following parameters:
 
-- Fixed effect size ($\delta = 15$) across all simulations
+- Fixed effect size ($\delta = 10$) across all simulations
 - Conservative variance at 1588 (inflated pilot SD by 10% to 39.85)
 - Bonferroni-adjusted $\alpha = 0.0083$
 
@@ -215,10 +215,10 @@ Outcomes under the alternative hypothesis are generated (true effect exists), th
 
 ```{r, echo=FALSE}
 # Parameters
-Nvec <- seq(120, 300, by = 10)  # Sample sizes to test
+Nvec <- seq(350, 450, by = 10)  # Sample sizes to test
 n_simulations <- 10000            # Number of simulations per sample size
 alpha <- 0.05/6                   # Bonferroni-adjusted alpha
-delta <- 15                       # Effect size
+delta <- 10                       # Effect size
 sd_pilot <- 36.23                 # Pilot SD
 sd_inflated <- sd_pilot * 1.1     # Conservative SD estimate
 mean <- 55                        # Pilot mean
@@ -340,7 +340,12 @@ final_plot <- ggdraw(power_plot) +
 final_plot
 ```
 
-The simulation results indicate that with 190 observations per scenario, the observed power is 85%. This finding gives supporting evidence that the sample size that is suggested above is enough to acquire approximately 85% power.
+The simulation results indicate that with 395 observations per scenario, the observed power is 80%. This finding gives supporting evidence that the sample size that is suggested above is enough to acquire approximately 80% power.
+
+## Discussion
+
+To meet the requirement of 195 pears per type in one scenario, and assuming each tree produces 32 pears, we would need approximately 6.1 trees per type. Given that each ecotron holds a maximum of 6 trees, this would require 3 ecotrons per scenario, or 12 in total. However, considering that each tree may yield between 32 and 40 pears, we estimate needing between 4.8 and 6.1 trees per type per scenario. For feasibility, we propose using 6 trees per type per scenario, which allows us to meet the sample requirement without exceeding the ecotron capacity. Based on this, the total number of ecotrons can be reduced to 8 (instead of 12) while still achieving the required number of pears.
+
 
 # 4. Reference
 Vandendijck, Y. (2025). Introduction to Sample Size Calculations [Lecture slides]. Multivariate and Hierarchical Data project, Hasselt University
