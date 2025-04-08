@@ -42,8 +42,8 @@ $$\mu_i \neq \mu_j \quad \text{for} \quad i, j = 1, 2, 3, 4 \quad \text{and} \qu
 
 $$ Y_{ki} = \beta_0 + b_k + \beta_1*Variety_k + \sum_{j=1}^{3}(\beta_{2j}*Scenario_{kj}) + \sum_{j=1}^{3}\beta_{3j}Scenario_{kj}*Variety_k + \epsilon_{ki}$$
 
-- $Y_{ki}$: the i-th observed outcome of the k-th tree, $i = 1,….,n_K$
-- $b_k$: is the random effect of the k-th tree (k = 1,2...K). $b_k$ ~ N(0, σ_{tree}^{2})
+- $Y_{ki}$: the i-th observed outcome of the k-th tree, $k = 1,2...K, i = 1,….,n_K$
+- $b_k$: is the random effect of the k-th tree, $b_k \sim N(0, \sigma_{tree}^{2})$
 - $\beta_{0}$: the average score of the reference group (Conference type, scenario 1)
 - $Variety_k$: dummy variable (1 for Doyenne du Comice species, 0 otherwise)
 - $Scenario_{kj}$: dummy variable, j = 1,2,3 for scenario 2, 3, 4 respectively
@@ -54,12 +54,14 @@ $$ Y_{ki} = \beta_0 + b_k + \beta_1*Variety_k + \sum_{j=1}^{3}(\beta_{2j}*Scenar
 
 To calculate the required sample size, we use the following assumptions:
 
-- **Significance Level ($\alpha$)**: \( \alpha = \frac{0.05}{6} \) (adjusted for multiple comparisons)
-- **Effect Size**: 10, 15, and 20 (representing small, medium, and large effect sizes)
+- **Significance Level **: \( \alpha = \frac{0.05}{6} \) (adjusted for multiple comparisons)
+- **Effect Size**: 10, 15, and 20
 - **Variance**: The standard deviation from the pilot study is approximately 36.23, inflated by a factor of 1.1 to \( \text{SD} = 39.85 \)
 - **Power**: 80%, 85%, and 90%
 - **Missing Data**: data missing rate data is expected to be 10%
+- Each tree contains 32 pears, and there are $\leq6$ trees per ecotron, it is required 2 ecotrons for each scenario
 
+<<<<<<< HEAD
 ## Result
   
 ```{r, echo=FALSE}
@@ -126,39 +128,36 @@ Number of scenario: 4 (Control, Scenario 2, Scenario 3, Scenario 4)
 Number of Ecotrons: 12 (each Ecotrons one scenario)
 
 Number of species: 2 (Conference and Doyenne du Comice pears)
+=======
+The sample size after adjusting for 10% missing data rate is presented in the table below.
+>>>>>>> eb332b870e3b7c44ac8b3e6f5466a9fedbe256eb
 
 ```{r, echo=FALSE}
 # Create data frames for all effect sizes
 data_10 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
-  `Sample size per group` = c(390, 436, 496),
-  `Total sample size` = c(1564, 1744, 1984),
-  `Number of tree` = c(49, 55, 62),
-  `Number of tree per scenario` = c(12, 14, 16),
-  `Number of tree per ecotron` = c(4, 5, 5),
-  `Number of tree per species` = c(2, 3, 3),
+  `Sample size per scenario` = c(390, 436, 496),
+  `No. of trees per scenario` = c(13, 14, 16),
+  `No. of ecotrons per scenario` = c(3, 3, 3),
+  `No. of trees per species` = c("6-7", 7, 8),
   check.names = FALSE  
 )
 
 data_15 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
-  `Sample size per group` = c(175, 195, 222),
-  `Total sample size` = c(700, 780, 888),
-  `Number of tree` = c(22, 24, 28),
-  `Number of tree per scenario` = c(6, 6, 7),
-  `Number of tree per ecotron` = c(2, 2, 2),
-  `Number of tree per species` = c(1, 1, 1),
+  `Sample size per scenario` = c(175, 195, 222),
+  `No. of trees per scenario` = c(6, 7, 7),
+  `No. of ecotrons per scenario` = c(1, 2, 2),
+  `No. of trees per species` = c(3, "3-4", "3-4"),
   check.names = FALSE
 )
 
 data_20 <- data.frame(
   Power = c(0.8, 0.85, 0.9),
-  `Sample size per group` = c(100, 111, 126),
-  `Total sample size` = c(400, 444, 504),
-  `Number of tree` = c(13, 14, 16),
-  `Number of tree per scenario` = c(3, 4, 4),
-  `Number of tree per ecotron` = c(1, 1, 1),
-  `Number of tree per species` = c(1, 1, 1),
+  `Sample size per scenario` = c(100, 111, 126),
+  `No. of trees per scenario` = c(4, 4, 4),
+  `No. of ecotrons per scenario` = c(1, 1, 1),
+  `No. of trees per species` = c(2, 2, 2),
   check.names = FALSE
 )
 
@@ -178,7 +177,7 @@ colnames(combined_data) <- rep(c("0.8", "0.85", "0.9"), 3)
 library(kableExtra)
 
 kable(combined_data, format = "latex", booktabs = TRUE,
-      caption = "Number of tree per species in each ecotron",
+      caption = "Number of trees and ecotrons per scenario",
       align = "c",
       row.names = TRUE,
       escape = FALSE) %>%  # Important for special LaTeX characters
@@ -196,26 +195,23 @@ kable(combined_data, format = "latex", booktabs = TRUE,
   row_spec(1:nrow(combined_data), extra_css = "white-space: nowrap;")
 ```
 
+## Experimental design
 
-# 3. Simulation
-We run 10,000 Monte Carlo simulations per scenario with:
+Based on the table, it is observed that 175 pears per scenario are suggested to observe the minimal difference of 10 in the quality scores between 2 groups, at $\alpha = 0.0083$ and power $\beta = 0.8$. Hence, the experimental design is suggested as following:
 
-Parameters:
+- One ecotron per scenario, in total 4 ecotrons for 4 scenarios.
+- 6 trees in each ecotron, with 3 trees for each pear species. To get a balance design, $32 \times 6 = 192$ pears per ecotron are required (96 pears for each species)
+- $32 \times 6 \times 4 = 768$ pears is the final sample size. 
+
+## Simulation
+
+We also run 10,000 simulations for each sample size (from 120 to 300), with following parameters:
 
 - Fixed effect size ($\delta = 15$) across all simulations
+- Conservative variance at 1588 (inflated pilot SD by 10% to 39.85)
+- Bonferroni-adjusted $\alpha = 0.0083$
 
-- Conservative variance (inflated pilot SD by 10% to 39.85)
-
-- Bonferroni-adjusted $\alpha = 0.0083$ for 6 comparisons
-
-Methods:
-
-- Simulate 10,000 datasets per sample size (N = 120–300)
-
-- Generate outcomes under the alternative hypothesis (true effect exists)
-
-- Compute two-sided t-tests for each treatment and control group
-
+Outcomes under the alternative hypothesis are generated (true effect exists), then two-sided t-test is performed for between the control group and one intervention group.
 
 ```{r, echo=FALSE}
 # Parameters
@@ -225,6 +221,7 @@ alpha <- 0.05/6                   # Bonferroni-adjusted alpha
 delta <- 15                       # Effect size
 sd_pilot <- 36.23                 # Pilot SD
 sd_inflated <- sd_pilot * 1.1     # Conservative SD estimate
+mean <- 55                        # Pilot mean
 
 # Initialize results vector
 sampleSizePower <- numeric(length(Nvec))
@@ -239,6 +236,7 @@ for (j in seq_along(Nvec)) {
   
   for (i in 1:n_simulations) {
     # Generate data
+<<<<<<< HEAD
     control <- rnorm(N, mean = 50, sd = sd_inflated)
     tx1 <- rnorm(N, mean = 50 + delta, sd = sd_inflated)
 <<<<<<< HEAD
@@ -251,11 +249,15 @@ for (j in seq_along(Nvec)) {
     scenario = c(rep(c(1,2,3,4), each = N))
     quality = c(control, tx1, tx2, tx3)
 >>>>>>> faec16cd97dcf7b640a0f13d82a293cd9f2b09bc
+=======
+    control <- rnorm(N, mean = 55, sd = sd_inflated)
+    tx1 <- rnorm(N, mean = 55 + delta, sd = sd_inflated)
+>>>>>>> eb332b870e3b7c44ac8b3e6f5466a9fedbe256eb
     
     # Two-sided t-tests
-    pval[i] <- summary(aov(quality ~ scenario))[[1]][["Pr(>F)"]][1]
+    pval[i] <- t.test(control, tx1, mu = 0, alternative = "two.sided")$p.value
     
-    significant[i] <- pval[i] < 0.05 
+    significant[i] <- pval[i] < 0.05/6
   }
   
   # Calculate power for this sample size
@@ -263,7 +265,6 @@ for (j in seq_along(Nvec)) {
 }
 
 ```
-
 
 ```{r, echo=FALSE}
 library(ggplot2)
@@ -339,7 +340,7 @@ final_plot <- ggdraw(power_plot) +
 final_plot
 ```
 
-The simulation results indicate that 155 observations per group are required to achieve statistically significant results. This finding aligns closely with our earlier sample size calculation (Section 2.3), which estimated a requirement of 175 observations to reach 85% power.
+The simulation results indicate that with 190 observations per scenario, the observed power is 85%. This finding gives supporting evidence that the sample size that is suggested above is enough to acquire approximately 85% power.
 
 # 4. Reference
 Vandendijck, Y. (2025). Introduction to Sample Size Calculations [Lecture slides]. Multivariate and Hierarchical Data project, Hasselt University
