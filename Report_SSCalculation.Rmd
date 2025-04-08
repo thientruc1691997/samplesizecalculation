@@ -146,7 +146,7 @@ Outcomes under the alternative hypothesis are generated (true effect exists), th
 
 ```{r, echo=FALSE}
 # Parameters
-Nvec <- seq(350, 450, by = 10)  # Sample sizes to test
+Nvec <- seq(300, 450, by = 10)  # Sample sizes to test
 n_simulations <- 10000            # Number of simulations per sample size
 alpha <- 0.05/6                   # Bonferroni-adjusted alpha
 delta <- 10                       # Effect size
@@ -197,9 +197,9 @@ power_plot <- ggplot(plot_data, aes(x = SampleSize, y = Power)) +
   
   # Reference lines
   geom_hline(
-    yintercept = c(0.85, 0.9),
-    linetype = c("dashed", "dotted"),
-    color = c("#d62728", "#2ca02c"),
+    yintercept = c(0.8),
+    linetype = c("dashed"),
+    color = c("#2ca02c"),
     linewidth = 0.8
   ) +
   
@@ -207,9 +207,9 @@ power_plot <- ggplot(plot_data, aes(x = SampleSize, y = Power)) +
   annotate(
     "text",
     x = max(Nvec),
-    y = c(0.86, 0.91),
-    label = c("85% Power", "90% Power"),
-    color = c("#d62728", "#2ca02c"),
+    y = c(0.81),
+    label = c("80% Power"),
+    color = c("#2ca02c"),
     hjust = 1,
     vjust = -0.5,
     size = 3.5
@@ -223,7 +223,7 @@ power_plot <- ggplot(plot_data, aes(x = SampleSize, y = Power)) +
     expand = c(0, 0)
   ) +
   scale_x_continuous(
-    breaks = seq(120, 300, 20),
+    breaks = seq(300, 450, 20),
     expand = c(0.02, 0.02)
   ) +
   
